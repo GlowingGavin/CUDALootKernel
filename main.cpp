@@ -75,6 +75,13 @@ Function parse_function(const json& f)
     {
         fn.type = "enchant_random";
     }
+	else if (name == "minecraft:set_damage")
+	{
+		fn.type = "damage";
+
+		fn.min = 0;
+		fn.max = 0;
+	}
     else
     {
         fn.type = "other";
@@ -165,6 +172,10 @@ void emit_function(std::ofstream& out, const Function& f, bool isTarget)
         out << "int ench = nextInt(seed, 5);\n";
 		out << "nextSeed(seed);\n";
     }
+	else if (f.type == "damage")
+	{
+		out << "nextFloat(seed);\n";
+	}
 }
 
 void emit_pool(std::ofstream& out, const Pool& pool,
