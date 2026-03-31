@@ -192,7 +192,11 @@ void emit_pool(std::ofstream& out, const Pool& pool,
             << (pool.max_rolls - pool.min_rolls + 1) << ");\n";
 
     out << "for(int r=0;r<rolls" << poolIndex << ";r++){\n";
-    out << "int entry = nextInt(seed," << totalWeight << ");\n";
+
+	if (totalWeight > 1)
+	{
+		out << "int entry = nextInt(seed," << totalWeight << ");\n";
+	}
 
     int acc = 0;
 
@@ -201,7 +205,17 @@ void emit_pool(std::ofstream& out, const Pool& pool,
         auto& e = pool.entries[i];
         int next = acc + e.weight;
 
-        out << "if(entry < " << next << "){\n";
+        if (totalWeight > 1)
+		{
+			if (i == 0)
+				out << "if(entry < " << next << "){\n";
+			else
+				out << "else if(entry < " << next << "){\n";
+		}
+		else
+		{
+			out << "{\n";
+		}
 
         int targetIndex = -1;
 		for (int t = 0; t < targets.size(); t++)
@@ -227,12 +241,14 @@ void emit_pool(std::ofstream& out, const Pool& pool,
             for (auto& f : e.functions)
                 emit_function(out, f, false);
         }
-
-        out << "} else ";
+		
+		out << "}\n";
         acc = next;
     }
+	
+	if (totalWeight > 1)
+    	out << "else { }\n";
 
-    out << "{ }\n";
     out << "}\n";
 }
 
@@ -338,7 +354,7 @@ __global__ void kernel(uint64_t start){
 
 int main()
 {
-    const int BLOCKS = 2048;
+    const int BLOCKS = 8192;
     const int THREADS = 256;
 
     uint64_t start = 0;
