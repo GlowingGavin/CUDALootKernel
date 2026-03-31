@@ -1,0 +1,1 @@
+nvcc kernel.cu -O3 -allow-unsupported-compiler -o run
