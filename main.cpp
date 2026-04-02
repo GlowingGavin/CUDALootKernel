@@ -49,7 +49,12 @@ Function parse_function(const json& f)
 {
     Function fn;
 
-    std::string name = f["function"];
+    if (!f.contains("function") || !f["function"].is_string())
+	{
+		return Function{"other", 0, 0};
+	}
+
+	std::string name = f["function"];
 
     if (name == "minecraft:set_count")
     {
@@ -108,18 +113,20 @@ Pool parse_pool(const json& p)
 	{
 		Entry entry;
 
-		if (e["type"] == "minecraft:empty")
-		{
-			entry.item = "empty";
-			entry.weight = e["weight"];
-			pool.entries.push_back(entry);
-			continue;
-		}
+		if (e.contains("weight") && e["weight"].is_number())
+			entry.weight = (int)e["weight"];
+		else
+			entry.weight = 1;
 
-		entry.item = e["name"];
+		if (e.contains("name"))
+			entry.item = e["name"];
+		else
+			entry.item = "unknown";
 
         if (e.contains("weight"))
-            entry.weight = e["weight"];
+			entry.weight = e["weight"];
+		else
+			entry.weight = 1;
 
         if (e.contains("functions"))
         {
